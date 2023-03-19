@@ -1,0 +1,31 @@
+[package]
+name = "rust-rpg"
+version = "0.1.0"
+authors = ["Guillaume Mucwicki"]
+build = "build.rs"
+edition = "2021"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+ggez = "0.7.1"
+cgmath = "0.18.0"
+ron = "0.8.0"
+serde = { version = "1.0.130", features = ["derive"] }
+structopt = "0.3.23"
+strum_macros = "0.24"
+strum = "0.24"
+noise = "0.8.2"
+geometry = { path = "libs/geometry" }
+geometry-derive = { path = "libs/geometry-derive" }
+
+[workspace]
+members = [
+    "libs/geometry",
+    "libs/geometry-derive"
+]
+resolver = "2"
+
+[[example]]
+name = "landscape"
+path = "examples/landscape.rs"
