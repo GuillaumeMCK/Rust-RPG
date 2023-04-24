@@ -37,30 +37,32 @@ impl Map {
         let gen_map: Vec<Vec<u32>> = Self::generate_map(rng, size);
         let mut layer: Vec<Vec<Tile>> = Vec::new();
 
-        let half_tile_size = Size {
-            width: TILE_SIZE.width / 2.0,
-            height: TILE_SIZE.height / 2.0,
-        };
+        let half_tile_width = TILE_SIZE.width / 2.0;
+        let half_tile_height = TILE_SIZE.height / 2.0;
+
+        let map_height = half_tile_height * (gen_map.len() as f32);
 
         for (x_idx, row_of_gen_map) in gen_map.iter().enumerate() {
             let mut new_tiles_row = Vec::new();
 
             for (y_idx, value) in row_of_gen_map.iter().enumerate() {
                 if let Some(sprite) = landscape.create_sprite(SpriteRef::Index(*value as usize)) {
-                    println!("x_idx: {} | y_idx: {}", x_idx, y_idx);
                     // Calculate the isometric position of the tile
-                    let mut x = (x_idx as f32) * half_tile_size.width - (y_idx as f32) * half_tile_size.width;
-                    let mut y = (y_idx as f32) * half_tile_size.height + (x_idx as f32) * half_tile_size.height;
-                    println!("x: {} | x_idx * half_tile_size.width: {} | y_idx * half_tile_size.width: {}", x, (x_idx as f32) * half_tile_size.width, (y_idx as f32) * half_tile_size.width);
-                    println!("y: {} | y_idx * half_tile_size.height: {} | x_idx * half_tile_size.height: {}", y, (y_idx as f32) * half_tile_size.height, (x_idx as f32) * half_tile_size.height);
+                    let mut x = (x_idx as f32) * half_tile_width - (y_idx as f32) * half_tile_width;
+                    let mut y = (y_idx as f32) * half_tile_height + (x_idx as f32) * half_tile_height;
 
                     // Subtracting the difference between the tile size and the sprite size
                     // to center the sprite in the tile
                     x -= sprite.width - TILE_SIZE.width;
                     y -= sprite.height - TILE_SIZE.height;
 
-                    x *= sprite.scale.x;
-                    y *= sprite.scale.y;
+                    // Add offset to center the map
+                    x -= half_tile_width;
+                    y -= map_height - half_tile_height;
+
+                    // Scale the tile
+                    x *= SCALE;
+                    y *= SCALE;
 
                     // Create the tile
                     let tile = Tile {

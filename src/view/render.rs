@@ -19,7 +19,7 @@ use crate::{
 };
 
 pub const TILE_SIZE: Size = Size { width: 128.0, height: 64.0 };
-pub const SCALE: f32 = 0.5;
+pub const SCALE: f32 = 0.6;
 
 pub fn init_rendering_ctx(game_size: Size, resource_dir: PathBuf) -> GameResult<(Context, EventLoop<()>)> {
     let cb = ContextBuilder::new("Rust RPG", "GuillaumeMCK")
