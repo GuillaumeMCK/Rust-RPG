@@ -25,7 +25,9 @@ pub fn init_rendering_ctx(game_size: Size, resource_dir: PathBuf) -> GameResult<
     let cb = ContextBuilder::new("Rust RPG", "GuillaumeMCK")
         .add_resource_path(resource_dir)
         .window_setup(conf::WindowSetup::default().title("Rust RPG"))
-        .window_mode(conf::WindowMode::default().dimensions(game_size.width as f32, game_size.height as f32));
+        .window_mode(conf::WindowMode::default()
+            .dimensions(game_size.width as f32, game_size.height as f32)
+            .resizable(true));
     let ctx = cb.build()?;
     Ok(ctx)
 }

@@ -37,10 +37,10 @@ mod models;
 #[structopt(name = "Rust RPG", about = "A simple RPG game written in Rust")]
 struct Opt {
     /// The width of the game window
-    #[structopt(short, long, default_value = "800")]
+    #[structopt(short, long, default_value = "1200")]
     width: f32,
     /// The height of the game window
-    #[structopt(short, long, default_value = "600")]
+    #[structopt(short, long, default_value = "800")]
     height: f32,
 }
 
