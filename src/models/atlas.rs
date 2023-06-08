@@ -56,7 +56,7 @@ impl Atlas {
     /// Read the atlas image from the given path and create a sprite batch
     pub fn create_sprite_batch(&self) -> SpriteBatch {
         let mut sp = SpriteBatch::new(self.image.clone());
-        sp.set_filter(ggez::graphics::FilterMode::Nearest);
+        sp.set_filter(ggez::graphics::FilterMode::Linear);
         sp
     }
 

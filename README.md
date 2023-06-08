@@ -1,5 +1,8 @@
 # RustPG 🦀⚔️
-
+TODO : 
+ - [ ] Finish map generation with towers
+ - [ ] Add a player on the map and cap his movement to the map bounds
+ - [ ] POC of the user input handling
 ---
 
 > A project to learn Rust. It's using the [GGez](https://ggez.rs/) game engine.

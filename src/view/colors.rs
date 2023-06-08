@@ -42,3 +42,10 @@ pub const GREEN: Color = Color {
     b: 0.0,
     a: 0.8,
 };
+
+pub const BLUE: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 1.0,
+    a: 0.8,
+};

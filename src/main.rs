@@ -27,6 +27,7 @@ use crate::{
         Resources,
     },
 };
+use crate::controllers::TimeController;
 
 mod view;
 mod controllers;
@@ -37,10 +38,10 @@ mod models;
 #[structopt(name = "Rust RPG", about = "A simple RPG game written in Rust")]
 struct Opt {
     /// The width of the game window
-    #[structopt(short, long, default_value = "1200")]
+    #[structopt(short, long, default_value = "1400")]
     width: f32,
     /// The height of the game window
-    #[structopt(short, long, default_value = "800")]
+    #[structopt(short, long, default_value = "1000")]
     height: f32,
 }
 
@@ -52,6 +53,9 @@ pub struct ApplicationState {
     resources: &'static mut Resources,
     // The game state contains all information needed to run the game
     game_state: GameState,
+    // Time controller keeps track of the time that has passed since the last frame
+    // and the time that has passed since the last shot
+    time_controller: TimeController,
     // The input controller keeps track of the actions that are triggered by the player
     input_controller: InputController,
     // The event buffer keeps track of events that trigger sounds, so we can separate
@@ -74,8 +78,9 @@ impl ApplicationState {
             has_focus: true,
             resources: Resources::instance(),
             game_state: GameState::new(&mut rng, game_size),
+            time_controller: TimeController::new(),
             input_controller: InputController::new(),
-            event_buffer: vec![Event::GameStart],
+            event_buffer: vec![],
             rng,
         })
     }
@@ -96,9 +101,21 @@ impl event::EventHandler for ApplicationState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Pause the game if the window has no focus
         if !self.has_focus {
-            return Ok(());
+            return Ok(())
         }
-        Ok(())
+
+        // Update game state, and check for collisions
+        let duration = ggez::timer::delta(ctx);
+        self.time_controller.update_seconds(
+            duration,
+            self.input_controller.actions(),
+            &mut self.game_state,
+            &mut self.event_buffer,
+            &mut self.rng
+        );
+
+        CollisionsController::handle_collisions(&mut self.game_state, &mut self.time_controller, &mut self.event_buffer);
+
     }
 
     // This is called when ggez wants us to draw our game

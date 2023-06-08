@@ -18,6 +18,7 @@ pub fn position_derive(input: TokenStream) -> TokenStream {
             fn y(&self) -> f32 { self.vector.position.y }
             fn x_mut(&mut self) -> &mut f32 { &mut self.vector.position.x }
             fn y_mut(&mut self) -> &mut f32 { &mut self.vector.position.y }
+            fn position(&self) -> Point { self.vector.position }
         }
     };
     gen.into()

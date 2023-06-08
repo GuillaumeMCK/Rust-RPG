@@ -2,9 +2,12 @@ use std;
 use std::path::PathBuf;
 
 use ggez::{conf, Context, ContextBuilder, GameResult};
+use ggez::conf::NumSamples;
 use ggez::event::EventLoop;
 use ggez::graphics::{self, Color, Drawable, DrawMode, DrawParam, FillOptions, Mesh, Rect, size, StrokeOptions, TextFragment};
+use ggez::input::mouse::position;
 use ggez::mint::Point2;
+use rand::seq::index::sample;
 
 use geometry::{Point, Position, Size};
 
@@ -77,8 +80,8 @@ fn render_message(ctx: &mut Context, app: &mut ApplicationState) -> GameResult<(
                 .dest(Point::new(x, y).point2()))
         };
 
-        draw_text(title, colors::GREY, 20.0, true)?;
-        draw_text(subtitle, colors::WHITE, 14.0, false)?;
+        draw_text(title, colors::GREY, 32.0, true)?;
+        draw_text(subtitle, colors::WHITE, 20.0, false)?;
     }
 
     Ok(())
@@ -87,10 +90,12 @@ fn render_message(ctx: &mut Context, app: &mut ApplicationState) -> GameResult<(
 /// Renders the world and everything in it
 pub fn render_world(ctx: &mut Context, world: &World, resources: &Resources) -> GameResult<()> {
     render_map(ctx, &world.map, resources, world.map_position())?;
-    // render_enemy(ctx, world, resources)?;
-    render_player(ctx, &world.player, resources)?;
 
-    render_grid(ctx, world)?;
+    // render_enemy(ctx, world, resources)?;
+
+    render_player(ctx, &world.player, resources, world.map_position())?;
+
+    render_debug(ctx, world)?;
     // Finally draw the player as red
     // if !world.player.is_dead {
     //     render_player(ctx, &world.player, resources)?;
@@ -100,35 +105,36 @@ pub fn render_world(ctx: &mut Context, world: &World, resources: &Resources) -> 
 }
 
 /// Renders the map
-pub fn render_map(ctx: &mut Context, map: &Map, resources: &Resources, pos: Point2<f32>) -> GameResult<()> {
+pub fn render_map(ctx: &mut Context, map: &Map, resources: &Resources, pos: Point) -> GameResult<()> {
     let layers: &Vec<Layer> = &map.layers();
 
     for layer in layers {
-        layer.sprite_batch.draw(ctx, DrawParam::new().dest(pos))?;
+        layer.sprite_batch.draw(ctx, DrawParam::new().dest(pos.point2()))?;
     }
 
     Ok(())
 }
 
 /// Renders the player
-pub fn render_player(ctx: &mut Context, player: &Player, resources: &Resources) -> GameResult<()> {
+pub fn render_player(ctx: &mut Context, player: &Player, resources: &Resources, pos: Point) -> GameResult<()> {
     let image = &resources.images.hero;
     let scale = player.radius() * 2.0 / resources.images.hero.width() as f32;
     graphics::draw(
         ctx,
         image,
         DrawParam::new()
-            .dest(player.position().point2())
-            .scale(Point::new(1.0, 1.0).point2()),
+            .dest((pos + player.position()).point2())
+            .scale(Point2::<f32>::from([SCALE, SCALE]))
     )
 }
 
 /// Debug grid to show to middle of the screen
-pub fn render_grid(ctx: &mut Context, world: &World) -> GameResult<()> {
+pub fn render_debug(ctx: &mut Context, world: &World) -> GameResult<()> {
     let Size { width, height } = world.size;
     let w = width / 2.0;
     let h = height / 2.0;
 
+    // draw horizontal line
     let mut mesh = Mesh::new_line(
         ctx,
         &[Point::new(0.0, h).point2(), Point::new(width, h).point2()],
@@ -137,6 +143,7 @@ pub fn render_grid(ctx: &mut Context, world: &World) -> GameResult<()> {
     )?;
     mesh.draw(ctx, DrawParam::new())?;
 
+    // draw vertical line
     mesh = Mesh::new_line(
         ctx,
         &[Point::new(w, 0.0).point2(), Point::new(w, height).point2()],
@@ -144,6 +151,17 @@ pub fn render_grid(ctx: &mut Context, world: &World) -> GameResult<()> {
         colors::RED,
     )?;
     mesh.draw(ctx, DrawParam::new())?;
+
+    // draw the playable area as a polygon
+    let mut points = Vec::new();
+    for point in world.map.playable_area {
+        points.push(point.point2());
+    }
+
+    let mut mesh = Mesh::new_polygon(ctx, DrawMode::stroke(1.0), &points, colors::BLUE)?;
+
+    // draw at the position of the first point
+    mesh.draw(ctx, DrawParam::new().dest(world.map_position().point2()))?;
 
     Ok(())
 }

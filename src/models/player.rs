@@ -1,21 +1,20 @@
 use rand::Rng;
-use geometry::{Size, Vector, Position};
+use geometry::{Size, Vector, Position, Point};
 use geometry_derive::Position;
-use ggez::mint::Point2;
 
 /// The `Player` is the hero controlled by the user
 #[derive(Default, Position)]
 pub struct Player {
     pub is_dead: bool,
-    vector: Vector,
+    pub vector: Vector,
 }
 
 impl Player {
-    /// Create a new `Player` with a random position and direction
-    pub fn random<R: Rng>(rng: &mut R, bounds: Size) -> Player {
+    /// Create a new `Player` at the given position
+    pub fn new(position: Point) -> Player {
         Player {
             is_dead: true,
-            vector: Vector::random(rng, bounds),
+            vector: Vector::new(position, 1.0),
         }
     }
 

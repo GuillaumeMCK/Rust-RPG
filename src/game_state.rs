@@ -30,6 +30,8 @@ pub struct GameState {
     pub world: World,
     /// Information about the Message to draw on the screen
     pub message: Option<Message>,
+    /// Score
+    pub score: u32,
 }
 
 impl GameState {
@@ -38,6 +40,7 @@ impl GameState {
         GameState {
             world: World::new(rng, size),
             message: Some(WELCOME_MESSAGE),
+            score: 0,
         }
     }
 
