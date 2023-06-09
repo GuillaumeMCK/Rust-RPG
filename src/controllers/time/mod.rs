@@ -14,7 +14,7 @@ use crate::{
     },
     game_state::GameState,
 };
-use crate::models::Enemy;
+use crate::models::{Enemy, Powerup};
 
 use self::timer::Timer;
 pub use self::timeout::Timeout;
@@ -26,6 +26,9 @@ const ATTACKS_RATE: f32 = 1.0 / ATTACKS_PER_SECOND;
 
 const ENEMY_SPAWNS_PER_SECOND: f32 = 5.0;
 const ENEMY_SPAWN_RATE: f32 = 1.0 / ENEMY_SPAWNS_PER_SECOND;
+
+const POWERUP_SPAWNS_PER_SECOND: f32 = 1.0 / 10.0; // every ~10 seconds
+const POWERUP_SPAWN_RATE: f32 = 1.0 / POWERUP_SPAWNS_PER_SECOND;
 
 // Constants related to movement
 // Speed is measured in pixels per second
@@ -43,8 +46,12 @@ pub struct TimeController {
     current_time: Duration,
     /// A timer to trigger creation of bullets
     shoot_timer: Timer,
+    /// A timer to trigger time slow
+    time_slow: Timer,
     /// A timer to spawn enemies
     enemy_timer: Timer,
+    /// A timer to spawn powerups
+    powerup_timer: Timer,
     /// Scheduled events that should happen in the future
     scheduled_timeouts: TimeoutQueue,
 }
@@ -54,6 +61,8 @@ impl TimeController {
         TimeController {
             current_time: Duration::from_secs(0),
             shoot_timer: Timer::from_seconds(ATTACKS_RATE),
+            time_slow: Timer::from_seconds(0.0),
+            powerup_timer: Timer::from_seconds(POWERUP_SPAWN_RATE),
             enemy_timer: Timer::from_seconds(ENEMY_SPAWN_RATE),
             scheduled_timeouts: TimeoutQueue::new(),
         }
@@ -64,6 +73,7 @@ impl TimeController {
         let _ = mem::replace(self, TimeController::new());
     }
 
+    /// Schedules a timeout to happen in the future
     pub fn schedule_timeout(&mut self, offset: Duration, timeout: Timeout) {
         self.scheduled_timeouts.push(self.current_time + offset, timeout);
     }
@@ -81,8 +91,12 @@ impl TimeController {
     ) {
         self.current_time += dt;
 
-        let dt = util::duration_to_seconds(dt);
+        let dt = dt.as_secs_f32();
         state.difficulty += dt / 100.0;
+
+        // Check if we have the "TimeSlow" powerup
+        let time_slow = false; //state.world.player.powerup == Some(PowerupKind::TimeSlow);
+
 
         // Check if we have any events that are scheduled to run, and if so, run them now
         if let Some(when) = self.scheduled_timeouts.peek() {
@@ -99,31 +113,36 @@ impl TimeController {
         }
 
         self.update_enemies(dt, state, events, time_slow, rng);
-        self.update_stars(dt, state, time_slow);
+    }
+
+    fn update_powerups<R: Rng>(&mut self, dt: f32, state: &mut GameState, rng: &mut R) {
+        for powerup in &mut state.world.powerups {
+            powerup.update(dt);
+        }
+
+        // Remove any expired powerups
+        // util::fast_retain(&mut state.world.powerups, |p| p.ttl > 0.0);
+
+        // Add new powerups
+        self.powerup_timer.update(self.current_time, || {
+            state
+                .world
+                .powerups
+                .push(Powerup::random(rng, state.world.size));
+        });
     }
 
     // Updates the position and rotation of the player
     fn update_player(&mut self, dt: f32, actions: &Actions, state: &mut GameState) {
         if !state.world.player.is_dead {
-            if actions.rotate_left {
-                *state.world.player.direction_mut() += -ROTATE_SPEED * dt;
-            } else if actions.rotate_right {
-                *state.world.player.direction_mut() += ROTATE_SPEED * dt;
-            }
-
             // Set speed and advance the player with wrap around
-            let speed = if actions.boost {
-                2.0 * ADVANCE_SPEED
-            } else {
-                ADVANCE_SPEED
-            };
-            state
-                .world
-                .player
-                .advance_wrapping(dt * speed, state.world.size);
+            // state
+            //     .world
+            //     .player
+            //     .advance_wrapping(dt * ADVANCE_SPEED, state.world.size);
 
             // Cool down the player's gun
-            state.world.player.gun.cool_down(dt);
+            // state.world.player.gun.cool_down(dt);
         }
     }
 
@@ -133,6 +152,7 @@ impl TimeController {
         dt: f32,
         state: &mut GameState,
         events: &mut Vec<Event>,
+        time_slow: bool,
         rng: &mut R
     ) {
         // Spawn enemies at random locations
@@ -166,7 +186,7 @@ impl TimeController {
                 };
             }
 
-            let new_enemy = Enemy::new(enemy_pos);
+            let new_enemy = Enemy::new(enemy_pos.position);
             state.world.enemies.push(new_enemy);
             events.push(Event::EnemySpawned);
         });
@@ -180,13 +200,13 @@ impl TimeController {
                 } else {
                     ENEMY_SPEED
                 };
-                enemy.update(
-                    dt * base_speed + state.difficulty,
-                    state.world.player.vector.position,
-                    state.world.size,
-                );
+                // enemy.update(
+                //     dt * base_speed + state.difficulty,
+                //     state.world.player.vector.position,
+                //     state.world.size,
+                // );
             } else {
-                enemy.advance(dt * ENEMY_SPEED);
+                // enemy.advance(dt * ENEMY_SPEED);
             }
         }
     }

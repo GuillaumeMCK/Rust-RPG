@@ -18,6 +18,7 @@ pub fn play_sounds(ctx: &Context, events: &mut Vec<Event>, resources: &mut Resou
             Defend => resources.jukebox.defend.play_detached(ctx)?,
             EnemyKilled => (),
             EnemySpawned => (),
+            PowerupGained => ()
         }
     }
     Ok(())

@@ -9,7 +9,7 @@ use ggez::input::mouse::position;
 use ggez::mint::Point2;
 use rand::seq::index::sample;
 
-use geometry::{Point, Position, Size};
+use geometry::{Collide, Point, Position, Size};
 
 use crate::{
     ApplicationState,

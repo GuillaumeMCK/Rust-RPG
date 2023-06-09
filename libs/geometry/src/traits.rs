@@ -20,3 +20,22 @@ pub trait Position {
         Point::new(self.x(), self.y())
     }
 }
+
+/// A trait that provides collision detection for objects with a position and a radius
+///
+/// For collision purposes, all objects are treated as circles
+pub trait Collide: Position {
+    /// Returns the radius of the object
+    fn radius(&self) -> f32;
+
+    /// Returns the diameter of the objects
+    fn diameter(&self) -> f32 {
+        self.radius() * 2.0
+    }
+
+    /// Returns true if the two objects collide and false otherwise
+    fn collides_with<O: Collide>(&self, other: &O) -> bool {
+        let radii = self.radius() + other.radius();
+        self.position().squared_distance_to(other.position()) < radii * radii
+    }
+}

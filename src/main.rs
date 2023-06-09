@@ -20,6 +20,7 @@ use crate::{
     controllers::{
         Event,
         InputController,
+        CollisionsController
     },
     game_state::GameState,
     view::{
@@ -101,7 +102,7 @@ impl event::EventHandler for ApplicationState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         // Pause the game if the window has no focus
         if !self.has_focus {
-            return Ok(())
+            return Ok(());
         }
 
         // Update game state, and check for collisions
@@ -111,11 +112,12 @@ impl event::EventHandler for ApplicationState {
             self.input_controller.actions(),
             &mut self.game_state,
             &mut self.event_buffer,
-            &mut self.rng
+            &mut self.rng,
         );
 
         CollisionsController::handle_collisions(&mut self.game_state, &mut self.time_controller, &mut self.event_buffer);
 
+        Ok(())
     }
 
     // This is called when ggez wants us to draw our game

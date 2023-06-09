@@ -28,6 +28,8 @@ const GAMEOVER_MESSAGE: Message = Message {
 pub struct GameState {
     /// The world contains everything that needs to be drawn
     pub world: World,
+    /// The current difficulty - the enemies will speed up over time
+    pub difficulty: f32,
     /// Information about the Message to draw on the screen
     pub message: Option<Message>,
     /// Score
@@ -39,6 +41,7 @@ impl GameState {
     pub fn new<R: Rng>(ref mut rng: &mut R, size: Size) -> GameState {
         GameState {
             world: World::new(rng, size),
+            difficulty: 0.0,
             message: Some(WELCOME_MESSAGE),
             score: 0,
         }
@@ -51,7 +54,20 @@ impl GameState {
 
     /// Reset our game-state
     pub fn reset(&mut self, rng: &mut impl Rng) {
+        // Create a new world
         self.world = World::new(rng, self.world.size);
-        self.message = Some(WELCOME_MESSAGE);
+
+        // Reset score
+        self.score = 0;
+
+        // Reset difficulty
+        self.difficulty = 0.0;
+
+        // Reset message
+        self.message = None;
+
+        // Remove all enemies and powerups
+        self.world.enemies.clear();
+        self.world.powerups.clear();
     }
 }

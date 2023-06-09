@@ -15,11 +15,13 @@ use crate::{
         TILE_SIZE,
     },
 };
+use crate::models::Powerup;
 
 /// A model that contains the other models and renders them
 pub struct World {
     pub player: Player,
     pub enemies: Vec<Enemy>,
+    pub powerups: Vec<Powerup>,
     pub map: Map,
     pub size: Size,
 }
@@ -33,6 +35,7 @@ impl World {
         World {
             player: Player::new(map.get_random_point(rng)),
             enemies: vec![],
+            powerups: vec![],
             map,
             size,
         }

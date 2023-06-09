@@ -7,8 +7,9 @@ pub use self::input::{
     InputController,
 };
 pub use self::time::{PLAYER_GRACE_AREA, TimeController};
+pub use self::collisions::CollisionsController;
 
-// mod collisions;
+mod collisions;
 mod input;
 mod time;
 
@@ -21,4 +22,5 @@ pub enum Event {
     Defend,
     EnemyKilled,
     EnemySpawned,
+    PowerupGained
 }
